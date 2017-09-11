@@ -70,6 +70,7 @@ public class ApplicationContextTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    @Ignore
     public void getBeanWithOneBeanDefinitionWithoutType() throws Exception {
         String beanName = "FirstBean";
         List<String> beanDescriptions = Arrays.asList(beanName);
@@ -181,4 +182,78 @@ public class ApplicationContextTest {
 
         assertNotSame(bean1, bean2);
     }
+
+    @Test
+    public void getBeanWithDependedBeans() throws Exception {
+
+        Map<String, Map<String, Object>> beanDescriptions =
+                new HashMap<String, Map<String, Object>>() {{
+                    put("testBean1",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBean.class);
+                                put("isPrototype", false);
+                            }});
+                    put("testBeanWithConstructor",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBeanWithConstructor.class);
+                                put("isPrototype", false);
+                            }});
+                }};
+
+        Config config = new JavaMapConfig(beanDescriptions);
+        Context context = new ApplicationContext(config);
+
+        TestBeanWithConstructor bean = (TestBeanWithConstructor) context.getBean("testBeanWithConstructor");
+
+        assertNotNull(bean);
+    }
+
+    @Test
+    public void getBeanWithDependedBeansWithTwoParam() throws Exception {
+
+        Map<String, Map<String, Object>> beanDescriptions =
+                new HashMap<String, Map<String, Object>>() {{
+                    put("testBean1",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBean.class);
+                                put("isPrototype", false);
+                            }});
+                    put("testBeanWithConstructorWithTwoParams",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBeanWithConstructor.class);
+                                put("isPrototype", false);
+                            }});
+                }};
+
+        Config config = new JavaMapConfig(beanDescriptions);
+        Context context = new ApplicationContext(config);
+
+        TestBeanWithConstructorWithTwoParams bean = (TestBeanWithConstructorWithTwoParams) context.getBean("bean");
+
+        assertNotNull(bean);
+    }
+
+    static class TestBean1 {
+
+    }
+
+    static class TestBeanWithConstructor {
+
+        private final TestBean1 testBean1;
+
+        public TestBeanWithConstructor(TestBean1 testBean1) {
+            this.testBean1 = testBean1;
+        }
+    }
+
+    static class TestBeanWithConstructorWithTwoParams {
+        private final TestBean1 testBean1;
+        private final TestBean1 testBean2;
+
+        public TestBeanWithConstructorWithTwoParams(TestBean1 testBean1, TestBean1 testBean2) {
+            this.testBean1 = testBean1;
+            this.testBean2 = testBean2;
+        }
+    }
+
 }
