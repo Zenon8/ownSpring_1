@@ -1,14 +1,14 @@
 package ua.rd.ioc;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class ApplicationContext implements Context {
 
-    private BeanDefinition[] beanDefinitions;
+    private List<BeanDefinition> beanDefinitions;
+    private Map<String, Object> beans = new HashMap<>();
 
     public ApplicationContext(Config config) {
-        beanDefinitions = config.beanDefinitions();
+        beanDefinitions = Arrays.asList(config.beanDefinitions());
     }
 
     public ApplicationContext() {
@@ -16,23 +16,39 @@ public class ApplicationContext implements Context {
     }
 
     public Object getBean(String beanName) {
-        List<BeanDefinition> beanDefinitions =
-                Arrays.asList(this.beanDefinitions);
-        if(beanDefinitions.stream().map(BeanDefinition::getBeanName).anyMatch(n -> n.equals(beanName))) {
-            return new TestBean();
-            //BeanDefinition beanDefinition = null;
-            //return beanDefinition.getBeanType().newInstance();
-        } else {
-            throw new NoSuchBeanException();
+        BeanDefinition beanDefinition = getBeanDefinitionByName(beanName);
+        Object bean = beans.get(beanName);
+
+        if (bean == null) {
+            bean = createNewBean(beanDefinition);
+            if (!beanDefinition.isPrototype()) {
+                beans.put(beanName, bean);
+            }
+        }
+        return bean;
+    }
+
+    private Object createNewBean(BeanDefinition beanDefinition) {
+        return createNewBeanInstance(beanDefinition);
+    }
+
+    private BeanDefinition getBeanDefinitionByName(String beanName) {
+        return beanDefinitions.stream()
+                .filter(bd -> Objects.equals(bd.getBeanName(), beanName))
+                .findAny().orElseThrow(NoSuchBeanException::new);
+    }
+
+    public Object createNewBeanInstance(BeanDefinition bd) {
+        try {
+            return bd.getBeanType().newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
         }
     }
 
     public String[] getBeanDefinitionNames() {
-        String[] beanDefinitionNames =
-                Arrays.stream(beanDefinitions)
-                        .map(BeanDefinition::getBeanName)
-                        .toArray(String[]::new);
-        return beanDefinitionNames;
-
+        return beanDefinitions.stream()
+                .map(BeanDefinition::getBeanName)
+                .toArray(String[]::new);
     }
 }
