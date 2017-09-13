@@ -103,6 +103,7 @@ public class ApplicationContextTest {
         assertNotNull(bean);
     }
 
+    /*  Converter   */
     private Map<String, Map<String, Object>> convertTestListToMap(List<String> beanDescriptionWithBeanNamesOnly) {
         return beanDescriptionWithBeanNamesOnly.stream()
                 .collect(
@@ -188,7 +189,7 @@ public class ApplicationContextTest {
 
         Map<String, Map<String, Object>> beanDescriptions =
                 new HashMap<String, Map<String, Object>>() {{
-                    put("testBean1",
+                    put("testBean",
                             new HashMap<String, Object>() {{
                                 put("type", TestBean.class);
                                 put("isPrototype", false);
@@ -213,14 +214,14 @@ public class ApplicationContextTest {
 
         Map<String, Map<String, Object>> beanDescriptions =
                 new HashMap<String, Map<String, Object>>() {{
-                    put("testBean1",
+                    put("testBean",
                             new HashMap<String, Object>() {{
                                 put("type", TestBean.class);
                                 put("isPrototype", false);
                             }});
                     put("testBeanWithConstructorWithTwoParams",
                             new HashMap<String, Object>() {{
-                                put("type", TestBeanWithConstructor.class);
+                                put("type", TestBeanWithConstructorWithTwoParams.class);
                                 put("isPrototype", false);
                             }});
                 }};
@@ -228,29 +229,27 @@ public class ApplicationContextTest {
         Config config = new JavaMapConfig(beanDescriptions);
         Context context = new ApplicationContext(config);
 
-        TestBeanWithConstructorWithTwoParams bean = (TestBeanWithConstructorWithTwoParams) context.getBean("bean");
+        TestBeanWithConstructorWithTwoParams bean = (TestBeanWithConstructorWithTwoParams) context.getBean("testBeanWithConstructorWithTwoParams");
 
         assertNotNull(bean);
     }
 
-    static class TestBean1 {
-
-    }
+    static class TestBean {}
 
     static class TestBeanWithConstructor {
 
-        private final TestBean1 testBean1;
+        private final TestBean testBean1;
 
-        public TestBeanWithConstructor(TestBean1 testBean1) {
+        public TestBeanWithConstructor(TestBean testBean1) {
             this.testBean1 = testBean1;
         }
     }
 
     static class TestBeanWithConstructorWithTwoParams {
-        private final TestBean1 testBean1;
-        private final TestBean1 testBean2;
+        private final TestBean testBean1;
+        private final TestBean testBean2;
 
-        public TestBeanWithConstructorWithTwoParams(TestBean1 testBean1, TestBean1 testBean2) {
+        public TestBeanWithConstructorWithTwoParams(TestBean testBean1, TestBean testBean2) {
             this.testBean1 = testBean1;
             this.testBean2 = testBean2;
         }

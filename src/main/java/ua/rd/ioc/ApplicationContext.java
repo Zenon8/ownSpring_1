@@ -1,6 +1,7 @@
 package ua.rd.ioc;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class ApplicationContext implements Context {
@@ -55,7 +56,21 @@ public class ApplicationContext implements Context {
     private Object createBeanWithConstructorWithParams(Class<?> type) {
         Constructor<?> constructor = type.getDeclaredConstructors()[0];
         Class<?>[] parameterTypes = constructor.getParameterTypes();
-        return null;
+        String[] paramNames = getParamNamesFromParameterTypes(parameterTypes);
+        Object[] paramInstance = Arrays.stream(paramNames).map(this::getBean).toArray();
+
+        Constructor<?> currentConstructor = null;
+
+        try {
+            currentConstructor = type.getConstructor(parameterTypes);
+            return currentConstructor.newInstance(paramInstance);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String[] getParamNamesFromParameterTypes(Class<?>[] parameterTypes) {
+        return Arrays.stream(parameterTypes).map(Class::getSimpleName).map(simpleName -> simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1)).toArray(String[]::new);
     }
 
     private Object createBeanWithDefaultConstructor(Class<?> type) {
