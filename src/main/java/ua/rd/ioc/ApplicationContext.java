@@ -1,7 +1,6 @@
 package ua.rd.ioc;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class ApplicationContext implements Context {
@@ -11,6 +10,11 @@ public class ApplicationContext implements Context {
 
     public ApplicationContext(Config config) {
         beanDefinitions = Arrays.asList(config.beanDefinitions());
+        initContext(beanDefinitions);
+    }
+
+    private void initContext(List<BeanDefinition> beanDefinitions) {
+        beanDefinitions.forEach(bd -> getBean(bd.getBeanName()));
     }
 
     public ApplicationContext() {
@@ -20,18 +24,69 @@ public class ApplicationContext implements Context {
     public Object getBean(String beanName) {
         BeanDefinition beanDefinition = getBeanDefinitionByName(beanName);
         Object bean = beans.get(beanName);
-
-        if (bean == null) {
-            bean = createNewBean(beanDefinition);
-            if (!beanDefinition.isPrototype()) {
-                beans.put(beanName, bean);
-            }
+        if (bean != null) {
+            return bean;
+        }
+        bean = createNewBean(beanDefinition);
+        if (!beanDefinition.isPrototype()) {
+            beans.put(beanName, bean);
         }
         return bean;
     }
 
     private Object createNewBean(BeanDefinition beanDefinition) {
-        return createNewBeanInstance(beanDefinition);
+        Object bean = createNewBeanInstance(beanDefinition);
+        callInitMethod(bean);
+        bean = processAnnotation(bean);
+        return bean;
+    }
+
+    private Object processAnnotation(Object bean) {
+        Method[] methods = bean.getClass().getMethods();
+        for (Method method : methods) {
+            callPostCostructAnnotation(method, bean);
+            callBenchmarkAnnotation(method, bean);
+        }
+        return bean;
+    }
+
+    private void callPostCostructAnnotation(Method method, Object bean) {
+        if (method.isAnnotationPresent(MyPostConstruct.class)) {
+            try {
+                method.invoke(bean);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private Object callBenchmarkAnnotation(Method method, Object bean) {
+        Object proxyBean = bean;
+
+        if (method.isAnnotationPresent(Benchmark.class)) {
+           proxyBean = Proxy.newProxyInstance(
+                   bean.getClass().getClassLoader(),
+                   new Class[]{TestBeanInterface.class},
+                   new InvocationHandler() {
+                       @Override
+                       public Object invoke(Object proxy, Method methodObj, Object[] args) throws Throwable {
+                           System.out.println(methodObj.getName());
+                           return methodObj.invoke(bean, args);
+                       }
+                   }
+           );
+        }
+        return proxyBean;
+    }
+
+    private void callInitMethod(Object bean) {
+        try {
+            Method init = bean.getClass().getMethod("init");
+            init.invoke(bean);
+        } catch (NoSuchMethodException ignored) {
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private BeanDefinition getBeanDefinitionByName(String beanName) {

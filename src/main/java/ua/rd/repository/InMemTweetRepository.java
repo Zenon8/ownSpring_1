@@ -16,6 +16,10 @@ public class InMemTweetRepository implements TweetRepository {
         );
     }
 
+    public void init() {}
+
+
+
     @Override
     public Iterable<Tweet> allTweets() {
         return tweets;

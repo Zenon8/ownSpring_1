@@ -3,6 +3,8 @@ package ua.rd.ioc;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -109,7 +111,9 @@ public class ApplicationContextTest {
                 .collect(
                         Collectors.toMap(
                                 Function.identity(),
-                                beanName -> new HashMap<>()));
+                                beanName -> new HashMap<String, Object>() {{
+                                    put("type", TestBean.class);
+                                }}));
     }
 
     @Test
@@ -211,7 +215,6 @@ public class ApplicationContextTest {
 
     @Test
     public void getBeanWithDependedBeansWithTwoParam() throws Exception {
-
         Map<String, Map<String, Object>> beanDescriptions =
                 new HashMap<String, Map<String, Object>>() {{
                     put("testBean",
@@ -234,7 +237,107 @@ public class ApplicationContextTest {
         assertNotNull(bean);
     }
 
-    static class TestBean {}
+
+    @Test
+    public void getBeanCallInitMethod() throws Exception {
+        Map<String, Map<String, Object>> beanDescriptions =
+                new HashMap<String, Map<String, Object>>() {{
+                    put("testBean",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBean.class);
+                                put("isPrototype", false);
+                            }});
+                }};
+
+        Config config = new JavaMapConfig(beanDescriptions);
+        Context context = new ApplicationContext(config);
+
+        TestBean bean = (TestBean) context.getBean("testBean");
+
+        assertEquals("initialized", bean.initValue);
+    }
+
+
+    @Test
+    public void getBeanCallPostConstruct() throws Exception {
+        Map<String, Map<String, Object>> beanDescriptions =
+                new HashMap<String, Map<String, Object>>() {{
+                    put("testBean",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBean.class);
+                                put("isPrototype", false);
+                            }});
+                }};
+
+        Config config = new JavaMapConfig(beanDescriptions);
+        Context context = new ApplicationContext(config);
+
+        TestBean bean = (TestBean) context.getBean("testBean");
+
+        assertEquals("initByPostConstruct", bean.postConstructValue);
+    }
+
+    @Test
+    public void getReverseString() throws Exception {
+        Map<String, Map<String, Object>> beanDescriptions =
+                new HashMap<String, Map<String, Object>>() {{
+                    put("testBean",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBean.class);
+                                put("isPrototype", false);
+                            }});
+                }};
+
+        Config config = new JavaMapConfig(beanDescriptions);
+        Context context = new ApplicationContext(config);
+
+        TestBeanInterface bean = (TestBeanInterface) context.getBean("testBean");
+        String action = bean.methodToBenchmark("init");
+
+        assertEquals("tini", action);
+    }
+
+
+    /*@Test
+    public void getBeanWithBenchmarkAnnotationMeasure() throws Exception {
+        Map<String, Map<String, Object>> beanDescriptions =
+                new HashMap<String, Map<String, Object>>() {{
+                    put("testBean",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBean.class);
+                                put("isPrototype", false);
+                            }});
+                }};
+
+        Config config = new JavaMapConfig(beanDescriptions);
+        Context context = new ApplicationContext(config);
+
+        TestBean bean = (TestBean) context.getBean("testBean");
+        String action = bean.methodToBenchmark("init");
+
+        assertEquals("tini", action);
+    }*/
+
+
+
+    static class TestBean implements TestBeanInterface {
+        String initValue;
+        String postConstructValue;
+
+        public void init() {
+            initValue = "initialized";
+        }
+
+        @MyPostConstruct
+        public void postConstruct(){
+            postConstructValue = "initByPostConstruct";
+        }
+
+        @Benchmark
+        public String methodToBenchmark(String str) {
+          return new StringBuilder(str).reverse().toString();
+        }
+    }
 
     static class TestBeanWithConstructor {
 
@@ -254,5 +357,4 @@ public class ApplicationContextTest {
             this.testBean2 = testBean2;
         }
     }
-
 }
