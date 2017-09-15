@@ -1,5 +1,6 @@
 package ua.rd;
 
+import ua.rd.domain.Tweet;
 import ua.rd.ioc.ApplicationContext;
 import ua.rd.ioc.Config;
 import ua.rd.ioc.Context;
@@ -25,6 +26,11 @@ public class IoCRunner {
                                 put("type", InMemTweetRepository.class);
                                 put("isPrototype", false);
                             }});
+                    put("tweet",
+                            new HashMap<String, Object>() {{
+                                put("type", Tweet.class);
+                                put("isPrototype", true);
+                            }});
                     put("tweetService",
                             new HashMap<String, Object>() {{
                                 put("type", SimpleTweetService.class);
@@ -38,5 +44,7 @@ public class IoCRunner {
 
         System.out.println(tweetRepository.allTweets());
         System.out.println(tweetService.allTweats());
+
+        System.out.println(tweetService.newTweet() == tweetService.newTweet());
     }
 }

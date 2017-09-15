@@ -298,25 +298,6 @@ public class ApplicationContextTest {
     }
 
 
-    /*@Test
-    public void getBeanWithBenchmarkAnnotationMeasure() throws Exception {
-        Map<String, Map<String, Object>> beanDescriptions =
-                new HashMap<String, Map<String, Object>>() {{
-                    put("testBean",
-                            new HashMap<String, Object>() {{
-                                put("type", TestBeanInterface.class);
-                                put("isPrototype", false);
-                            }});
-                }};
-
-        Config config = new JavaMapConfig(beanDescriptions);
-        Context context = new ApplicationContext(config);
-
-        TestBeanInterface bean = (TestBeanInterface) context.getBean("testBean");
-        String action = bean.methodToBenchmark("init");
-
-        assertEquals("tini", action);
-    }*/
 
 
     static class TestBean implements TestBeanInterface {
@@ -332,8 +313,13 @@ public class ApplicationContextTest {
             postConstructValue = "initByPostConstruct";
         }
 
-        @Benchmark(enabled = false)
+        @Benchmark(enabled = true)
         public String methodToBenchmark(String str) {
+            String s1 = "";
+            for (int i = 0; i < 1_000; i++) {
+                s1 += "alsdknakldnaklndlka" + "sdfl;knsklfnsdklndf";
+            }
+
             return new StringBuilder(str).reverse().toString();
         }
 
@@ -379,4 +365,26 @@ public class ApplicationContextTest {
 
         void postConstruct();
     }
+
+
+    /*@Test
+    public void getBeanWithBenchmarkAnnotationMeasure() throws Exception {
+        Map<String, Map<String, Object>> beanDescriptions =
+                new HashMap<String, Map<String, Object>>() {{
+                    put("testBean",
+                            new HashMap<String, Object>() {{
+                                put("type", TestBeanInterface.class);
+                                put("isPrototype", false);
+                            }});
+                }};
+
+        Config config = new JavaMapConfig(beanDescriptions);
+        Context context = new ApplicationContext(config);
+
+        TestBeanInterface bean = (TestBeanInterface) context.getBean("testBean");
+        String action = bean.methodToBenchmark("init");
+
+        assertEquals("tini", action);
+    }*/
+
 }

@@ -23,14 +23,16 @@ public class ApplicationContext implements Context {
     }
 
     public Object getBean(String beanName) {
-        BeanDefinition beanDefinition = getBeanDefinitionByName(beanName);
-        Object bean = beans.get(beanName);
-        if (bean != null) {
-            return bean;
-        }
-        bean = createNewBean(beanDefinition);
+
+        return Optional
+                .ofNullable(beans.get(beanName))
+                .orElseGet(() -> createBeanByBeanDefinition(getBeanDefinitionByName(beanName)));
+    }
+
+    private Object createBeanByBeanDefinition(BeanDefinition beanDefinition) {
+        Object bean = createNewBean(beanDefinition);
         if (!beanDefinition.isPrototype()) {
-            beans.put(beanName, bean);
+            beans.put(beanDefinition.getBeanName(), bean);
         }
         return bean;
     }
@@ -57,8 +59,6 @@ public class ApplicationContext implements Context {
                 .map(BeanDefinition::getBeanName)
                 .toArray(String[]::new);
     }
-
-
 
 
     class BeanBuilder {
@@ -145,15 +145,15 @@ public class ApplicationContext implements Context {
                 Benchmark annotation = methodName.getAnnotation(Benchmark.class);
 
                 if (annotation != null && annotation.enabled()) {
-                    Object oldBean = bean;
+                    final Object oldBean = bean;
                     bean = Proxy.newProxyInstance(
-                            ClassLoader.getSystemClassLoader(),
+                            beanClass.getClassLoader(),
                             beanClass.getInterfaces(),
                             (proxy, method, args) -> {
                                 Long start = System.nanoTime();
                                 Object proxyBean = method.invoke(oldBean, args);
                                 Long end = System.nanoTime();
-                                System.out.println(end - start + " ns\n");
+                                System.out.println(end - start + " ns");
                                 return proxyBean;
                             }
                     );

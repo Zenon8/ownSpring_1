@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="tweetService" class="ua.rd.service.SimpleTweetService" scope="prototype">
+        <constructor-arg ref="tweetRepository"/>
+        <property name="tweet" ref="tweet1"/>
+    </bean>
+
+    <bean name="tweet1" class="ua.rd.domain.Tweet" scope="prototype"/>
+
+    <alias name="tweet2" alias="tweetParent"/>
+</beans>
