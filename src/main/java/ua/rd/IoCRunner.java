@@ -43,7 +43,7 @@ public class IoCRunner {
         TweetService tweetService = (TweetService) context.getBean("tweetService");
 
         System.out.println(tweetRepository.allTweets());
-        System.out.println(tweetService.allTweats());
+        System.out.println(tweetService.allTweets());
 
         System.out.println(tweetService.newTweet() == tweetService.newTweet());
     }
