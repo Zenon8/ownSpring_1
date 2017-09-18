@@ -1,7 +1,6 @@
 package ua.rd.service;
 
 import ua.rd.domain.Tweet;
-import ua.rd.ioc.Context;
 import ua.rd.repository.TweetRepository;
 
 
@@ -31,7 +30,7 @@ public class SimpleTweetService implements TweetService {
 
     @Override
     public Tweet newTweet() {
-        return tweet;
+        return new Tweet();
     }
 
     public void setTweet(Tweet tweet) {
@@ -39,12 +38,13 @@ public class SimpleTweetService implements TweetService {
     }
 }
 
-class PrototypeTweetProxy implements TweetService {
+/*
+class PrototypeTweetServiceProxy implements TweetService {
 
     private Context context;
     private TweetService tweetService;
 
-    public PrototypeTweetProxy(TweetService tweetService, Context context) {
+    public PrototypeTweetServiceProxy(TweetService tweetService, Context context) {
         this.context = context;
     }
 
@@ -62,4 +62,4 @@ class PrototypeTweetProxy implements TweetService {
     public Tweet newTweet() {
         return (Tweet) context.getBean("tweet");
     }
-}
+}*/

@@ -12,8 +12,10 @@ public class InMemTweetRepository implements TweetRepository {
 
     {
         tweets = Arrays.asList(
-                new Tweet(1L, "First Mesg", null),
-                new Tweet(2L, "Second Mesg", null)
+                new Tweet(),
+                new Tweet()
+//                new Tweet(1L, "First Mesg", null),
+//                new Tweet(2L, "Second Mesg", null)
         );
     }
 

@@ -17,20 +17,24 @@ public class SpringXMLConfigRunner {
         ConfigurableApplicationContext serviceContext = new ClassPathXmlApplicationContext(
                 new String[] {"config/serviceContext.xml"}, repoContext);
 
-//        Arrays.stream(serviceContext.getBeanDefinitionNames()).forEach(s -> System.out.println(s));
+
+        Arrays.stream(serviceContext.getBeanDefinitionNames()).forEach(System.out::println);
 
 //        TweetService tweetService = serviceContext.getBean("tweetService", TweetService.class);
-//        System.out.println(tweetService.allTweats());
+//        System.out.println(tweetService.allTweets());
 //
 //        TweetRepository tweetRepository = serviceContext.getBean("tweetRepository", TweetRepository.class);
 //        System.out.println(tweetRepository.allTweets());
 
-        Tweet tweet1 = (Tweet) serviceContext.getBean("tweet1");
-        System.out.println(tweet1);
-        Tweet tweet2 = (Tweet) serviceContext.getBean("tweet2");
-        System.out.println(tweet2);
-        Tweet tweetParent = (Tweet) serviceContext.getBean("tweetParent");
-        System.out.println(tweetParent);
+//        Tweet tweet1 = (Tweet) serviceContext.getBean("tweetService");
+//        System.out.println(tweet1.toString());
+        TweetService tweetService = (TweetService) serviceContext.getBean("tweetService");
+        System.out.println(tweetService.allTweets());
+        System.out.println(tweetService.newTweet() == tweetService.newTweet());
+
+        Tweet tweet = (Tweet) serviceContext.getBean("tweet");
+        System.out.println(tweet);
+        System.out.println(tweetService.getClass());
 
     }
 }

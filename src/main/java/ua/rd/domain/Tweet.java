@@ -26,4 +26,8 @@ public class Tweet {
         this.txt = txt;
         this.user = user;
     }
+
+    public void init() {
+        user.setTweet(this);
+    }
 }

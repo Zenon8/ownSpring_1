@@ -1,5 +1,7 @@
 package ua.rd.ioc;
 
+import ua.rd.service.TweetService;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
@@ -44,6 +46,9 @@ public class ApplicationContext implements Context {
         beanBuilder.callInitMethod();
         beanBuilder.createBenchmarkProxy();
 
+        if (beanDefinition.getBeanName().equals("tweetService")) {
+            beanBuilder.createTweetServiceProxy();
+        }
         Object bean = beanBuilder.build();
         return bean;
     }
@@ -163,6 +168,14 @@ public class ApplicationContext implements Context {
 
         public Object build() {
             return bean;
+        }
+
+        public void createTweetServiceProxy() {
+            bean = new PrototypeTweetServiceProxy(
+                    (TweetService) bean,
+                    ApplicationContext.this).createProxy();
+
+
         }
     }
 }

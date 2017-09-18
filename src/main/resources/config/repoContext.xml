@@ -8,11 +8,13 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/spring-context.xsd" >
 
-    <bean id="tweetRepository" class="ua.rd.repository.InMemTweetRepository" init-method="init" destroy-method="destroy"/>
+    <bean name="tweetRepository2" autowire-candidate="false" class="ua.rd.repository.InMemTweetRepository" init-method="init" destroy-method="destroy"/>
+
+    <bean name="tweetRepository1" class="ua.rd.repository.InMemTweetRepository" init-method="init" destroy-method="destroy"/>
 
     <bean name="tweet2" class="ua.rd.domain.Tweet">
-        <constructor-arg type="java.lang.String" value="Tweet1"/>
-        <constructor-arg type="ua.rd.domain.User"><null></null></constructor-arg>
+        <!--<constructor-arg type="java.lang.String" value="Tweet1"/>-->
+        <!--<constructor-arg type="ua.rd.domain.User"><null></null></constructor-arg>-->
     </bean>
 
 
