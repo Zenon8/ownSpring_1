@@ -3,6 +3,7 @@ package ua.rd.repository;
 import ua.rd.domain.Tweet;
 import ua.rd.ioc.Benchmark;
 
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,13 +13,14 @@ public class InMemTweetRepository implements TweetRepository {
 
     {
         tweets = Arrays.asList(
-                new Tweet(),
-                new Tweet()
-//                new Tweet(1L, "First Mesg", null),
-//                new Tweet(2L, "Second Mesg", null)
+//                new Tweet(),
+//                new Tweet()
+                new Tweet(1L, "First Mesg", null),
+                new Tweet(2L, "Second Mesg", null)
         );
     }
 
+    @PostConstruct
     public void init() {}
 
     @Override

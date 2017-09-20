@@ -1,15 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <context:component-scan base-package="ua.rd.service ua.rd.domain">
+        <!--<context:exclude-filter type="annotation" expression=""/>-->
+        <context:include-filter type="annotation" expression="ua.rd.domain.MyTweet"/>
+    </context:component-scan>
 
-    <bean id="tweetService" class="ua.rd.service.SimpleTweetService" autowire="constructor">
-        <!--<constructor-arg ref="tweetRepository"/>-->
-        <property name="tweet" ref="tweet"/>
-        <lookup-method name="newTweet" bean="tweet"/>
+    <bean name="tweet" class="ua.rd.domain.Tweet" scope="prototype">
+        <property name="user" value="DefaultUserName"/>
     </bean>
 
-    <bean name="tweet" class="ua.rd.domain.Tweet" scope="prototype"/>
+
+    <bean class="ua.rd.domain.UserFactoryBean"/>
+
+    <bean class="ua.rd.service.BenchmarkBeanPostProcessor"/>
+
+    <bean class="ua.rd.service.TweetBFPP"/>
+
+    <!--<bean name="tweet" class="ua.rd.domain.Tweet" scope="prototype"/>-->
 
 </beans>
