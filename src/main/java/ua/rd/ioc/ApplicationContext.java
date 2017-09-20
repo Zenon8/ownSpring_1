@@ -2,9 +2,16 @@ package ua.rd.ioc;
 
 import ua.rd.service.TweetService;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 public class ApplicationContext implements Context {
 
@@ -12,26 +19,28 @@ public class ApplicationContext implements Context {
     private Map<String, Object> beans = new HashMap<>();
 
     public ApplicationContext() {
-        beanDefinitions = Config.EMPTY_BEANDEFINITION;//new BeanDefinition[0];
+        beanDefinitions = Config.EMPTY_BEANDEFINITION;
     }
 
-    public ApplicationContext(Config config) {
+    public ApplicationContext(final Config config) {
         beanDefinitions = Arrays.asList(config.beanDefinitions());
         initContext(beanDefinitions);
     }
 
-    private void initContext(List<BeanDefinition> beanDefinitions) {
+    private void initContext(final List<BeanDefinition> beanDefinitions) {
         beanDefinitions.forEach(bd -> getBean(bd.getBeanName()));
     }
 
-    public Object getBean(String beanName) {
+    public Object getBean(final String beanName) {
 
         return Optional
                 .ofNullable(beans.get(beanName))
-                .orElseGet(() -> createBeanByBeanDefinition(getBeanDefinitionByName(beanName)));
+                .orElseGet(() -> createBeanByBeanDefinition(
+                        getBeanDefinitionByName(beanName)));
     }
 
-    private Object createBeanByBeanDefinition(BeanDefinition beanDefinition) {
+    private Object createBeanByBeanDefinition(final BeanDefinition beanDefinition) {
+
         Object bean = createNewBean(beanDefinition);
         if (!beanDefinition.isPrototype()) {
             beans.put(beanDefinition.getBeanName(), bean);
@@ -39,7 +48,7 @@ public class ApplicationContext implements Context {
         return bean;
     }
 
-    private Object createNewBean(BeanDefinition beanDefinition) {
+    private Object createNewBean(final BeanDefinition beanDefinition) {
         BeanBuilder beanBuilder = new BeanBuilder(beanDefinition);
         beanBuilder.createNewBeanInstance();
         beanBuilder.callPostCostructAnnotatedMethod();
@@ -49,11 +58,10 @@ public class ApplicationContext implements Context {
         if (beanDefinition.getBeanName().equals("tweetService")) {
             beanBuilder.createTweetServiceProxy();
         }
-        Object bean = beanBuilder.build();
-        return bean;
+        return beanBuilder.build();
     }
 
-    private BeanDefinition getBeanDefinitionByName(String beanName) {
+    private BeanDefinition getBeanDefinitionByName(final String beanName) {
         return beanDefinitions.stream()
                 .filter(bd -> Objects.equals(bd.getBeanName(), beanName))
                 .findAny().orElseThrow(NoSuchBeanException::new);
@@ -70,11 +78,11 @@ public class ApplicationContext implements Context {
         private BeanDefinition beanDefinition;
         private Object bean;
 
-        public BeanBuilder(BeanDefinition beanDefinition) {
+        BeanBuilder(final BeanDefinition beanDefinition) {
             this.beanDefinition = beanDefinition;
         }
 
-        public void createNewBeanInstance() {
+        void createNewBeanInstance() {
             Class<?> type = beanDefinition.getBeanType();
             Constructor<?> constructor = type.getDeclaredConstructors()[0];
 
@@ -85,7 +93,7 @@ public class ApplicationContext implements Context {
             }
         }
 
-        private Object createBeanWithDefaultConstructor(Class<?> type) {
+        private Object createBeanWithDefaultConstructor(final Class<?> type) {
             Object newBean;
             try {
                 newBean = type.newInstance();
@@ -95,7 +103,7 @@ public class ApplicationContext implements Context {
             return newBean;
         }
 
-        private Object createBeanWithConstructorWithParams(Class<?> type) {
+        private Object createBeanWithConstructorWithParams(final Class<?> type) {
             Constructor<?> constructor = type.getDeclaredConstructors()[0];
             Class<?>[] parameterTypes = constructor.getParameterTypes();
             String[] paramBean = getBeanNameByType(parameterTypes);
@@ -114,8 +122,11 @@ public class ApplicationContext implements Context {
             }
         }
 
-        private String[] getBeanNameByType(Class<?>[] parameterTypes) {
-            return Arrays.stream(parameterTypes).map(Class::getSimpleName).map(simpleName -> simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1)).toArray(String[]::new);
+        private String[] getBeanNameByType(final Class<?>[] parameterTypes) {
+            return Arrays.stream(parameterTypes)
+                    .map(Class::getSimpleName)
+                    .map(simpleName -> simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1))
+                    .toArray(String[]::new);
         }
 
         private void callPostCostructAnnotatedMethod() {
@@ -166,11 +177,11 @@ public class ApplicationContext implements Context {
             }
         }
 
-        public Object build() {
+        Object build() {
             return bean;
         }
 
-        public void createTweetServiceProxy() {
+        void createTweetServiceProxy() {
             bean = new PrototypeTweetServiceProxy(
                     (TweetService) bean,
                     ApplicationContext.this).createProxy();
